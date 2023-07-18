@@ -1,0 +1,7 @@
+version: '3.4'
+
+services:
+  abouttokens:
+    image: abouttokens:latest
+    volumes:
+      - ./AboutTokens/wwwroot:/app/wwwroot
