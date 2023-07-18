@@ -2,10 +2,10 @@ version: '3.4'
 
 services:
   abouttokens:
-    image: ${DOCKER_REGISTRY-}abouttokens
-    build:
-      context: .
-      dockerfile: AboutTokens/Dockerfile
+    image: abouttokens:latest
+    # build:
+    #   context: .
+    #   dockerfile: AboutTokens/Dockerfile
 
   identityserver:
     image: ${DOCKER_REGISTRY-}identityserver
