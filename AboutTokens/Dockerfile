@@ -4,7 +4,6 @@ USER app
 WORKDIR /app
 
 FROM mcr.microsoft.com/dotnet/sdk:8.0-preview AS build
-RUN apt update && apt install clang gcc lld musl-dev -y
 WORKDIR /src
 COPY ["AboutTokens/AboutTokens.csproj", "AboutTokens/"]
 RUN dotnet restore "AboutTokens/AboutTokens.csproj"
