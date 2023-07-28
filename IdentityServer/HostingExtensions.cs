@@ -1,4 +1,10 @@
-﻿using Microsoft.AspNetCore.HttpOverrides;
+﻿using Duende.IdentityServer.Test;
+using IdentityServer.Data;
+using IdentityServer.Models;
+using IdentityServer.Options;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using System;
 
 namespace IdentityServer;
 
@@ -13,31 +19,57 @@ internal static class HostingExtensions
 
 
         builder.Services.AddRazorPages();
-
-        //allow X-Forward headers to specify the real host and protocol of Identity Server
-        builder.Services.Configure<ForwardedHeadersOptions>(options =>
+        builder.Services.AddDbContext<ApplicationDbContext>(options =>
         {
-            options.ForwardedHeaders =
-                ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedHost;
-            options.KnownNetworks.Clear();
-            options.KnownProxies.Clear();
-            options.RequireHeaderSymmetry = false;
-            options.ForwardLimit = null;
+            options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"));
         });
+
+        builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
+            .AddEntityFrameworkStores<ApplicationDbContext>()
+            .AddDefaultTokenProviders();
+
+
+        ////allow X-Forward headers to specify the real host and protocol of Identity Server
+        //builder.Services.Configure<ForwardedHeadersOptions>(options =>
+        //{
+        //    options.ForwardedHeaders =
+        //        ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedHost;
+        //    options.KnownNetworks.Clear();
+        //    options.KnownProxies.Clear();
+        //    options.RequireHeaderSymmetry = false;
+        //    options.ForwardLimit = null;
+        //});
+
+
+
 
         builder.Services.AddIdentityServer(options =>
             {
-                options.AccessTokenJwtType = "JWT"; //Azure AD requires this
+                options.Events.RaiseErrorEvents = true;
+                options.Events.RaiseInformationEvents = true;
+                options.Events.RaiseFailureEvents = true;
+                options.Events.RaiseSuccessEvents = true;
+
+                options.EmitStaticAudienceClaim = true;
+                options.AccessTokenJwtType = "JWT";
             })
+            .AddInMemoryIdentityResources(Config.IdentityResources)
+            .AddAspNetIdentity<ApplicationUser>()
+            .AddProfileService<CustomProfileService>()
+
+
             .AddInMemoryApiResources(Config.ApiResources)
             .AddInMemoryApiScopes(Config.ApiScopes)
             .AddInMemoryClients(Config.GetClients(idsrvConfig!));
+            //.AddTestUsers(Config.TestUsers.ToList());
 
         return builder;
     }
 
     public static WebApplication ConfigurePipeline(this WebApplication app)
     {
+        app.EnsureSeedData();
+
         app.UseForwardedHeaders();
         if (app.Environment.IsDevelopment())
         {
@@ -54,7 +86,9 @@ internal static class HostingExtensions
         app.UseIdentityServer();
 
         app.UseAuthorization();
-        app.MapRazorPages().RequireAuthorization();
+
+        app.MapRazorPages()
+            .RequireAuthorization();
 
         return app;
     }

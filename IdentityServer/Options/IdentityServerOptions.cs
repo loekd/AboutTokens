@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace IdentityServer
+namespace IdentityServer.Options
 {
     /// <summary>
     /// Can be bound from configuration to set up Identity Server as an IDP.

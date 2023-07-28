@@ -1,0 +1,15 @@
+﻿@inject NavigationManager Navigation
+
+<AuthorizeView>
+    <Authorized>
+        <strong>Hello, @context.User.Identity.Name!</strong>
+        <a href="@context.User.FindFirst("bff:logout_url")?.Value">Log out</a>
+    </Authorized>
+    <NotAuthorized>
+        @{
+            var returnUrl = Uri.EscapeDataString("/" + Navigation.ToBaseRelativePath(Navigation.Uri));
+            var authority = $"https://localhost:7147/bff/login?returnUrl={returnUrl}";
+        }
+        <a href="@authority">Log in</a>
+    </NotAuthorized>
+</AuthorizeView>

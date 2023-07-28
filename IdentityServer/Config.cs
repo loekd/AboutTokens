@@ -1,91 +1,117 @@
 ﻿using Duende.IdentityServer;
 using Duende.IdentityServer.Models;
-using IdentityModel;
-using Microsoft.AspNetCore.DataProtection;
+using Duende.IdentityServer.Test;
+using IdentityServer.Options;
+using static System.Net.WebRequestMethods;
 using Secret = Duende.IdentityServer.Models.Secret;
 
 namespace IdentityServer;
 
 public static class Config
 {
-    public const string ScreeningReadWriteScope = "Screening.ReadWrite";
-    public const string OnboardingReadWriteScope = "Onboarding.ReadWrite";
+    public const string InventoryReadWriteScope = "Inventory.ReadWrite";
+    public const string InventoryAllScope = "Inventory.All";
+    public const string OrderReadWriteScope = "Order.ReadWrite";
+    public const string OrderAllScope = "Order.All";
 
     public static IEnumerable<IdentityResource> IdentityResources =>
         new List<IdentityResource>
         {
             new IdentityResources.OpenId(),
-            new IdentityResources.Profile(),
-            new IdentityResource()
-            {
-                Name = "verification",
-                UserClaims = new List<string>
-                {
-                    JwtClaimTypes.Email,
-                    JwtClaimTypes.EmailVerified
-                }
-            }
+            new IdentityResources.Profile()
         };
 
     public static IEnumerable<ApiScope> ApiScopes =>
         new List<ApiScope>
         {
-            new ApiScope(ScreeningReadWriteScope, "Screening Api Scope")
+            new ApiScope(InventoryReadWriteScope)
             {
-                Description = "Access Screening API."
+                Description = "Read & Write Access Inventory API."
             },
-            new ApiScope(OnboardingReadWriteScope, "Onboarding Api Scope")
+            new ApiScope(InventoryAllScope)
             {
-                Description = "Access Onboarding API."
+                Description = "Full Access Inventory API."
+            },
+            new ApiScope(OrderReadWriteScope)
+            {
+                Description = "Read & Write Access Order API."
+            },
+            new ApiScope(OrderAllScope)
+            {
+                Description = "Full Access Order API."
             }
         };
 
     public static IEnumerable<ApiResource> ApiResources =>
         new List<ApiResource>
         {
-            new ApiResource("ScreeningAPI", "Screening Api Resource")
+            new ApiResource("OrderApi", "Order Api Resource")
             {
-                Description = "Screening API resource",
-                Scopes = { ScreeningReadWriteScope },
+                Description = "Order API resource",
+                Scopes = { OrderReadWriteScope, OrderAllScope },
                 UserClaims = { "name", "email", "role" },
             },
-            new ApiResource("api://AzureADTokenExchange", "Onboarding Api Resource")
+            new ApiResource("InventoryApi", "Inventory Api Resource")
             {
-                Description = "Onboarding API resource",
-                Scopes = { OnboardingReadWriteScope },
+                Description = "Inventory API resource",
+                Scopes = { InventoryReadWriteScope, InventoryAllScope },
                 UserClaims = { "name", "email", "role" },
             }
+        };
+
+    public static IEnumerable<TestUser> TestUsers =>
+        new List<TestUser>
+        {
+            new TestUser { Username = "bob", Password = "bob" }
         };
 
     public static IEnumerable<Client> GetClients(IdentityServerOptions config)
     {
         return new List<Client>
         {
-            // machine-to-machine client to protect the screening api
+            // Order API
             new Client
             {
-                ClientId = "screeningapi",
+                ClientId = "order-api",
                 ClientSecrets = { new Secret(config.ClientSecret.Sha256()) },
 
-                AllowedGrantTypes = GrantTypes.ClientCredentials,
+                AllowedGrantTypes = new[] {"urn:ietf:params:oauth:grant-type:token-exchange"},
                 // scopes that client has access to
-                AllowedScopes = { ScreeningReadWriteScope }
+                AllowedScopes = { OrderReadWriteScope }
             },
-            // machine-to-machine client to access the onboarding api
+            // Inventory API
             new Client
             {
-                ClientId = "onboardingapi",
+                ClientId = "inventory-api",
                 ClientSecrets = { new Secret(config.ClientSecret.Sha256()) },
 
-                AllowedGrantTypes = GrantTypes.ClientCredentials,
+                AllowedGrantTypes = new[] {"urn:ietf:params:oauth:grant-type:token-exchange"},
                 // scopes that client has access to
-                AllowedScopes = { OnboardingReadWriteScope },
-                ClientClaimsPrefix = string.Empty,
-                Claims =
+                AllowedScopes = { InventoryReadWriteScope }
+            },
+           // Backend for frontend
+            new Client
+            {
+                ClientId = "bff-api",
+                ClientSecrets = { new Secret("secret".Sha256()) },
+
+                AllowedGrantTypes = GrantTypes.CodeAndClientCredentials,
+
+                RedirectUris = { "https://localhost:7147/signin-oidc", "https://localhost:7166/signin-oidc", "https://oauth.pstmn.io/v1/browser-callback", "https://oauth.pstmn.io/v1/callback" },
+
+                BackChannelLogoutUri = "https://localhost:7166/logout",
+
+                PostLogoutRedirectUris = { "https://localhost:7166/signout-callback-oidc" },
+
+                AllowOfflineAccess = true,
+                AllowedScopes = 
                 {
-                    new ClientClaim(JwtClaimTypes.Subject, config.ImpersonationIdentityObjectId)
+                    IdentityServerConstants.StandardScopes.OpenId,
+                    IdentityServerConstants.StandardScopes.Profile,
+                    OrderAllScope,
+                    InventoryAllScope
                 }
-            }
+            },
         };
     }
 }
