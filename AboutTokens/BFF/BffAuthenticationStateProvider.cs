@@ -6,7 +6,7 @@ using System.Net.Http.Json;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Components.Authorization;
 
-namespace AboutTokens.BFF;
+namespace Frontend.BFF;
 
 // thanks to Bernd Hirschmann for this code
 // https://github.com/berhir/BlazorWebAssemblyCookieAuth
