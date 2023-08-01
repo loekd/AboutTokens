@@ -1,15 +1,10 @@
-// // Copyright (c) Duende Software. All rights reserved.
-// // See LICENSE in the project root for license information.
-
-using System.Net;
+﻿using Microsoft.AspNetCore.Components.Authorization;
 using System.Net.Http.Json;
+using System.Net;
 using System.Security.Claims;
-using Microsoft.AspNetCore.Components.Authorization;
 
 namespace Frontend.BFF;
 
-// thanks to Bernd Hirschmann for this code
-// https://github.com/berhir/BlazorWebAssemblyCookieAuth
 public class BffAuthenticationStateProvider : AuthenticationStateProvider
 {
     private static readonly TimeSpan UserCacheRefreshInterval = TimeSpan.FromSeconds(60);
@@ -18,7 +13,7 @@ public class BffAuthenticationStateProvider : AuthenticationStateProvider
     private readonly ILogger<BffAuthenticationStateProvider> _logger;
 
     private DateTimeOffset _userLastCheck = DateTimeOffset.FromUnixTimeSeconds(0);
-    private ClaimsPrincipal _cachedUser = new ClaimsPrincipal(new ClaimsIdentity());
+    private ClaimsPrincipal _cachedUser = new(new ClaimsIdentity());
 
     public BffAuthenticationStateProvider(
         HttpClient client,
@@ -30,7 +25,30 @@ public class BffAuthenticationStateProvider : AuthenticationStateProvider
 
     public override async Task<AuthenticationState> GetAuthenticationStateAsync()
     {
-        return new AuthenticationState(await GetUser());
+        var user = await GetUser();
+        var state = new AuthenticationState(user);
+
+        // checks periodically for a session state change and fires event
+        // this causes a round trip to the server
+        // adjust the period accordingly if that feature is needed
+        if (user.Identity.IsAuthenticated)
+        {
+            _logger.LogInformation("starting background check..");
+            Timer? timer = null;
+
+            timer = new Timer(async _ =>
+            {
+                var currentUser = await GetUser(false);
+                if (currentUser.Identity.IsAuthenticated == false)
+                {
+                    _logger.LogInformation("user logged out");
+                    NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(currentUser)));
+                    await timer.DisposeAsync();
+                }
+            }, null, 1000, 60_000);
+        }
+
+        return state;
     }
 
     private async ValueTask<ClaimsPrincipal> GetUser(bool useCache = true)
@@ -55,7 +73,7 @@ public class BffAuthenticationStateProvider : AuthenticationStateProvider
     {
         try
         {
-            _logger.LogInformation("Fetching user information.");
+            _logger.LogInformation("Fetching user information from {BaseAddress}.", _client.BaseAddress);
             var response = await _client.GetAsync("bff/user?slide=false");
 
             if (response.StatusCode == HttpStatusCode.OK)

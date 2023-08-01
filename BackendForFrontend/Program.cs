@@ -80,6 +80,17 @@ public class Program
                 {
                     options.Cookie.Name = "__Host-blazor";
                     options.Cookie.SameSite = SameSiteMode.Strict;
+
+                    options.Events = new ();
+                    options.Events.OnRedirectToAccessDenied= ctx =>
+                    {
+                        return Task.CompletedTask;
+                    };
+
+                    options.Events.OnSignedIn= ctx =>
+                    {
+                        return Task.CompletedTask;
+                    };
                 })
                 .AddOpenIdConnect("oidc", options =>
                 {
@@ -102,6 +113,17 @@ public class Program
                     options.Scope.Add("profile");
                     options.Scope.Add("Inventory.All");
                     options.Scope.Add("offline_access");
+
+                    options.Events = new ();
+                    options.Events.OnAuthenticationFailed = ctx =>
+                    {
+                        return Task.CompletedTask;
+                    };
+
+                    options.Events.OnTokenValidated = ctx =>
+                    {
+                        return Task.CompletedTask;
+                    };
                 });
 
             var app = builder.Build();

@@ -363,3 +363,5 @@ MigrationBackup/
 FodyWeavers.xsd
 /IdentityServer/keys/*.json
 /IdentityServer/AspIdUsers.db
+/IdentityServer/AspIdUsers.db-shm
+/IdentityServer/AspIdUsers.db-wal
