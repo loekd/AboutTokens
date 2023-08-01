@@ -89,6 +89,25 @@ public static class Config
                 // scopes that client has access to
                 AllowedScopes = { InventoryReadWriteScope }
             },
+            // Frontend With Tokens
+            new Client
+            {
+                ClientId = "fontend-with-tokens",
+                ClientSecrets = { new Secret(config.ClientSecret.Sha256()) },
+
+                RedirectUris = { "https://localhost:7267/signin-oidc", "https://localhost:7267/authentication/login-callback" },
+                RequireClientSecret = false,
+                AllowedGrantTypes = GrantTypes.Code,
+                // scopes that client has access to
+                AllowOfflineAccess = true,
+                AllowedScopes = 
+                {
+                    IdentityServerConstants.StandardScopes.OpenId,
+                    IdentityServerConstants.StandardScopes.Profile,
+                    InventoryReadWriteScope,
+                    OrderReadWriteScope
+                }
+            },
            // Backend for frontend
             new Client
             {

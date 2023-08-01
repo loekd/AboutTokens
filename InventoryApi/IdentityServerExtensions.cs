@@ -52,7 +52,7 @@
                 options.AddPolicy(ApiPolicyName, policy =>
                 {
                     policy.RequireAuthenticatedUser();
-                    policy.RequireClaim("scope", idsrvConfig.RequiredReadWriteScope);
+                    policy.RequireClaim("scope", idsrvConfig.RequiredReadWriteScopes.Split(';'));
                 })
             );
         }

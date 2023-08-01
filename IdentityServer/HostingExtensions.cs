@@ -61,7 +61,17 @@ internal static class HostingExtensions
             .AddInMemoryApiResources(Config.ApiResources)
             .AddInMemoryApiScopes(Config.ApiScopes)
             .AddInMemoryClients(Config.GetClients(idsrvConfig!));
-            //.AddTestUsers(Config.TestUsers.ToList());
+
+        builder.Services.AddCors(options =>
+        {
+            options.AddDefaultPolicy(policy =>
+            {
+                //allow the frontend with tokens
+                policy.WithOrigins("https://localhost:7267")
+                .AllowAnyHeader()
+                .AllowAnyMethod();
+            });
+        });
 
         return builder;
     }
@@ -79,6 +89,7 @@ internal static class HostingExtensions
         }
 
         //app.UseHttpsRedirection();
+        app.UseCors();
 
         app.UseStaticFiles();
         app.UseRouting();

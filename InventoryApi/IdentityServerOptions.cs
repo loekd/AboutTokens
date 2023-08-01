@@ -24,10 +24,10 @@ namespace InventoryApi
         public string Audience { get; set; } = "InventoryApi";
 
         /// <summary>
-        /// The scope required to access this API
+        /// The scopes allowed to access this API, separated by semicolons.
         /// </summary>
         [StringLength(128, MinimumLength = 2)]
-        public string RequiredReadWriteScope { get; set; } = "Inventory.All";
+        public string RequiredReadWriteScopes { get; set; } = "Inventory.All;Inventory.ReadWrite";
 
         /// <summary>
         /// Allowed token issuer FQDN, concatenated by ';'
@@ -36,7 +36,7 @@ namespace InventoryApi
 
         public override string ToString()
         {
-            return $"Auth: {Authority} - Aud: {Audience} - Scp: {RequiredReadWriteScope} - Iss:{Issuers}";
+            return $"Auth: {Authority} - Aud: {Audience} - Scp: {RequiredReadWriteScopes} - Iss:{Issuers}";
         }
     }
 }

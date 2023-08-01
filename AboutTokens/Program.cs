@@ -18,7 +18,7 @@ public class Program
         builder.Services.AddTransient<AntiforgeryHandler>();
 
         builder.Services
-            .AddHttpClient("bff", client => client.BaseAddress = new Uri(builder.Configuration["BackendForFrontEnd::Authority"] ?? "https://localhost:7147"))
+            .AddHttpClient("bff", client => client.BaseAddress = new Uri(builder.Configuration["BackendForFrontEnd::Endpoint"] ?? "https://localhost:7147"))
             .AddHttpMessageHandler<AntiforgeryHandler>();  //bff
 
         builder.Services.AddTransient(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient("bff"));
