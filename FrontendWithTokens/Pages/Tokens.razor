@@ -1,0 +1,106 @@
+﻿@page "/tokens"
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+@using System.IdentityModel.Tokens.Jwt;
+@using Newtonsoft.Json;
+
+@attribute [Authorize]
+@inject HttpClient Http
+@inject IJSRuntime JSRuntime
+
+<h1>Tokens</h1>
+
+<div class="contentDiv"> 
+    <div>
+        <input type="button" @onclick="async () => { _token = await GetJwtToken(TokenType.IdToken); }" value="Show ID token"></input>
+        <input type="button" @onclick="async () => { _token = await GetJwtToken(TokenType.AccessToken); }" value="Show Access token"></input>
+        <input type="button" @onclick="async () => { _token = await GetJwtToken(TokenType.RefreshToken); }"value="Show Refresh token"></input>
+        <input type="checkbox" @bind="@_decodeTokens" value="Decode token"></input>
+    </div>
+
+    <div>
+        <textarea rows="20" cols="60" @bind="@_token"></textarea>
+        <input type="button" @onclick="async () => { ResetTokenText(); }" value="Clear"></input>
+   </div>
+
+</div>
+
+
+@code {
+    private bool _decodeTokens = false;
+    private string? _token = "Token will appear here";
+    private enum TokenType
+    {
+        IdToken = 0,
+        AccessToken = 1,
+        RefreshToken = 2
+    }
+
+    /// <summary>
+    /// Gets the raw JWT id_token.
+    /// </summary>
+    /// <returns></returns>
+    private async Task<string?> GetJwtToken(TokenType tokenType)
+    {
+        string token;
+        string method;
+        switch (tokenType)
+        {
+            case TokenType.AccessToken:
+                method = "getAccessToken";
+                break;
+
+            case TokenType.IdToken:
+                method = "getIdToken";
+                break;
+
+            default:
+                method = "getRefreshToken";
+                break;
+        }
+
+        // Uses MSAL when working with AAD only
+        token = await this.JSRuntime.InvokeAsync<string>(method);
+
+        if (token == null)
+        {
+            Console.WriteLine($"Token fetch failed");
+            return null;
+        }
+
+        if (_decodeTokens)
+        {
+            JwtSecurityToken parsed = new JwtSecurityToken(token);
+            token = parsed.ToString();
+
+            int index = token.IndexOf("}.{");
+            if (index > 0)
+            {
+                string kid = token.Substring(0, index + 1);
+                string body = token.Substring(index + 2);
+
+                return $"{FormatJson(kid)}\n.\n{FormatJson(body)}";
+            }
+            else
+            {
+                return $"{FormatJson(token)}\n.";
+            }
+
+        }
+        else
+        {
+            return token;
+        }
+    }
+
+    private void ResetTokenText()
+    {
+        _token = "Token will appear here";
+    }
+
+    private static string FormatJson(string input)
+    {
+        var deserialized = JsonConvert.DeserializeObject(input);
+        return JsonConvert.SerializeObject(deserialized, Formatting.Indented);
+    }
+}

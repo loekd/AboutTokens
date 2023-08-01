@@ -33,6 +33,44 @@
     <script src="_content/Microsoft.AspNetCore.Components.WebAssembly.Authentication/AuthenticationService.js"></script>
     <script src="_framework/blazor.webassembly.js"></script>
     <script>navigator.serviceWorker.register('service-worker.js');</script>
+    <script language="ecmascript">
+        function getIdToken() {
+            return getToken("IdToken");
+        }
+
+        function getAccessToken() {
+            return getToken("AccessToken");
+        }
+
+        function getRefreshToken() {
+            return getToken("RefreshToken");
+        }
+
+        function getToken(tokenType) {
+
+            var keys = Object.keys(sessionStorage);
+            for (var i = 0; i < keys.length; i++) {
+                var entry = sessionStorage.getItem(sessionStorage.key(i));
+                try {
+                    var json = JSON.parse(entry);
+                    if (json.access_token === undefined) continue;
+
+                    if ("IdToken" === tokenType) {
+                        return json.id_token;
+                    } else if ("AccessToken" === tokenType) {
+                        return json.access_token;
+                    } else if ("RefreshToken" === tokenType) {
+                        return json.refresh_token;
+                    }
+
+                } catch {
+                    //ignore
+                }
+            }
+
+            return null;
+        }
+    </script>
 </body>
 
 </html>
