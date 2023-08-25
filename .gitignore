@@ -365,3 +365,4 @@ FodyWeavers.xsd
 /IdentityServer/AspIdUsers.db
 /IdentityServer/AspIdUsers.db-shm
 /IdentityServer/AspIdUsers.db-wal
+/BackendForFrontend/bff.db

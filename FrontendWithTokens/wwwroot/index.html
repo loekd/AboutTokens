@@ -3,6 +3,20 @@
 
 <head>
     <meta charset="utf-8" />
+    <meta http-equiv="Content-Security-Policy"
+          content="base-uri 'self';
+               default-src 'self';
+               img-src data: https:;
+               object-src 'none';
+               script-src 'self'
+                          'unsafe-eval'
+                          'nonce-rAnd0m1'
+                          'nonce-rAnd0m2';
+               style-src 'self';
+               upgrade-insecure-requests;
+               connect-src 'self' ws://localhost:* wss://localhost:* http://localhost:*;
+               frame-src 'self' https://localhost:*
+          ">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>FrontendWithTokens</title>
     <base href="/" />
@@ -32,8 +46,8 @@
     </div>
     <script src="_content/Microsoft.AspNetCore.Components.WebAssembly.Authentication/AuthenticationService.js"></script>
     <script src="_framework/blazor.webassembly.js"></script>
-    <script>navigator.serviceWorker.register('service-worker.js');</script>
-    <script language="ecmascript">
+    <script nonce="rAnd0m1">navigator.serviceWorker.register('service-worker.js');</script>
+    <script nonce="rAnd0m2" language="ecmascript">
         function getIdToken() {
             return getToken("IdToken");
         }

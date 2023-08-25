@@ -4,7 +4,19 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>About Tokens</title>
+    <meta http-equiv="Content-Security-Policy"
+          content="base-uri 'self';
+               default-src 'self';
+               img-src data: https:;
+               object-src 'none';
+               script-src 'self'
+                          'unsafe-eval'
+                          'nonce-rAnd0m';
+               style-src 'self';
+               upgrade-insecure-requests;
+               connect-src 'self' ws://localhost:* wss://localhost:* http://localhost:*;
+          ">
+    <title>SPA with cookies</title>
     <base href="/" />
     <link rel="stylesheet" href="css/bootstrap/bootstrap.min.css" />
     <link rel="stylesheet" href="css/bootstrap-icons/bootstrap-icons.min.css" />
@@ -31,7 +43,7 @@
         <a class="dismiss">🗙</a>
     </div>
     <script src="_framework/blazor.webassembly.js"></script>
-    <script>navigator.serviceWorker.register('service-worker.js');</script>
+    <script nonce="rAnd0m">navigator.serviceWorker.register('service-worker.js');</script>
 </body>
 
 </html>

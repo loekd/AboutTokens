@@ -1,6 +1,8 @@
 using Duende.Bff;
 using Duende.Bff.Yarp;
-using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Hosting;
 using Yarp.ReverseProxy.Configuration;
 
 namespace BackendForFrontend;
@@ -13,9 +15,17 @@ public class Program
         {
             var builder = WebApplication.CreateBuilder(args);
 
+            //db storage for crypto keys for auth cookie
+            builder.Services.AddDbContext<ApplicationDbContext>(options =>
+                options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+            builder.Services.AddDataProtection()
+                .PersistKeysToDbContext<ApplicationDbContext>();
+
             builder.Services.AddControllers();
             builder.Services.AddRazorPages();
             builder.Services.AddBff();
+
+            //configure routes to blazor host and api
             builder.Services.AddReverseProxy()
                 .AddTransforms<AccessTokenTransformProvider>()
                 .LoadFromMemory(
@@ -57,7 +67,7 @@ public class Program
                             ClusterId = "BlazorCluster",
                             Destinations = new Dictionary<string, DestinationConfig>(StringComparer.OrdinalIgnoreCase)
                             {
-                                { "Blazor", new DestinationConfig() { Address = "https://localhost:7166" } },
+                                { "Blazor", new DestinationConfig() { Address = "https://localhost:7166" } }, //blazor frontend
                             }
                         },
                         new ClusterConfig
@@ -65,7 +75,7 @@ public class Program
                             ClusterId = "InventoryApiCluster",
                             Destinations = new Dictionary<string, DestinationConfig>(StringComparer.OrdinalIgnoreCase)
                             {
-                                { "Inventory", new DestinationConfig() { Address = "https://localhost:7290" } },
+                                { "Inventory", new DestinationConfig() { Address = "https://localhost:7290" } }, //api
                             }
                         }
                     });
@@ -128,13 +138,10 @@ public class Program
 
             var app = builder.Build();
 
-
             if (!app.Environment.IsDevelopment())
             {
                 app.UseExceptionHandler("/Error");
             }
-
-            //app.UseStaticFiles();
 
             app.UseRouting();
             app.UseAuthentication();
@@ -149,6 +156,13 @@ public class Program
 
             app.MapReverseProxy()
                 .AsBffApiEndpoint().SkipAntiforgery();
+
+            //create database
+            using (var serviceScope = app.Services.CreateScope())
+            {
+                var context = serviceScope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+                context.Database.EnsureCreated();
+            }
 
             app.Run();
         }
