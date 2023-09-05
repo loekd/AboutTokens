@@ -11,6 +11,8 @@ public class Program
 {
     public static void Main(string[] args)
     {
+        Console.WriteLine("This is the BFF app");
+
         try
         {
             var builder = WebApplication.CreateBuilder(args);

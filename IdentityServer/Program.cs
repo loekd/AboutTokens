@@ -4,6 +4,8 @@ namespace IdentityServer
     {
         public static void Main(string[] args)
         {
+            Console.WriteLine("This is Duende Identity Server (IDP)");
+
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.

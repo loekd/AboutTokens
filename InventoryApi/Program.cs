@@ -4,6 +4,8 @@ namespace InventoryApi
     {
         public static void Main(string[] args)
         {
+            Console.WriteLine("This is the Inventory API");
+
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
