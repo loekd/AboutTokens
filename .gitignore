@@ -366,3 +366,5 @@ FodyWeavers.xsd
 /IdentityServer/AspIdUsers.db-shm
 /IdentityServer/AspIdUsers.db-wal
 /BackendForFrontend/bff.db
+/BackendForFrontend/bff.db-shm
+/BackendForFrontend/bff.db-wal
