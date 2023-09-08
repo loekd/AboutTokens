@@ -50,7 +50,7 @@ internal static class HostingExtensions
                 options.Events.RaiseFailureEvents = true;
                 options.Events.RaiseSuccessEvents = true;
 
-                options.EmitStaticAudienceClaim = true;
+                options.EmitStaticAudienceClaim = false;
                 options.AccessTokenJwtType = "JWT";
             })
             .AddInMemoryIdentityResources(Config.IdentityResources)

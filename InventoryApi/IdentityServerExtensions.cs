@@ -43,6 +43,11 @@
                             {
                                 return Task.CompletedTask;
                             };
+
+                            options.Events.OnForbidden = ctx =>
+                            {
+                                return Task.CompletedTask;
+                            };
                         });
 
 

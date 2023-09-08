@@ -49,13 +49,13 @@ public static class Config
             {
                 Description = "Order API resource",
                 Scopes = { OrderReadWriteScope, OrderAllScope },
-                UserClaims = { "name", "email", "role" },
+                UserClaims = {  },
             },
             new ApiResource("InventoryApi", "Inventory Api Resource")
             {
                 Description = "Inventory API resource",
                 Scopes = { InventoryReadWriteScope, InventoryAllScope },
-                UserClaims = { "name", "email", "role" },
+                UserClaims = {  },
             }
         };
 
@@ -98,8 +98,10 @@ public static class Config
                 RedirectUris = { "https://localhost:7267/signin-oidc", "https://localhost:7267/authentication/login-callback" },
                 RequireClientSecret = false,
                 AllowedGrantTypes = GrantTypes.Code,
+                AlwaysIncludeUserClaimsInIdToken = true,
                 // scopes that client has access to
                 AllowOfflineAccess = true,
+                RequireConsent = true,
                 AllowedScopes = 
                 {
                     IdentityServerConstants.StandardScopes.OpenId,
