@@ -8,6 +8,11 @@ namespace InventoryApi
 
             var builder = WebApplication.CreateBuilder(args);
 
+            builder.Services.AddHttpClient("Idp", client => 
+            {
+                client.BaseAddress = new Uri("https://localhost:7242");
+            });
+
             // Add services to the container.
             builder.Services
                 .AddOptions<IdentityServerOptions>()
