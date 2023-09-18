@@ -15,23 +15,26 @@
 
 <div class="contentDiv"> 
     <div>
-        <input type="button" @onclick="async () => { _token = await GetJwtToken(TokenType.IdToken); }" value="Show ID token" />
-        <input type="button" @onclick="async () => { _token = await GetJwtToken(TokenType.AccessToken); }" value="Show Access token" />
-        <input type="button" @onclick="async () => { _token = await GetJwtToken(TokenType.RefreshToken); }" value="Show Refresh token" />
-        <div>Decode token: <input type="checkbox" @bind="@_decodeTokens" value="Decode token"></input></div>
-        <div>Validate token: <input type="checkbox" @bind="@_validateTokens" value="Validate token"></input></div>
+        <input class="btn btn-primary" type="button" @onclick="async () => { _token = await GetJwtToken(TokenType.IdToken); }" value="Show ID token" />
+        <input class="btn btn-primary" type="button" @onclick="async () => { _token = await GetJwtToken(TokenType.AccessToken); }" value="Show Access token" />
+        <input class="btn btn-primary" type="button" @onclick="async () => { _token = await GetJwtToken(TokenType.RefreshToken); }" value="Show Refresh token" />
+        <div>Decode token: <input type="checkbox" class="form-check-input" @bind="@_decodeTokens" value="Decode token"></input></div>
+        <div>Validate token: <input type="checkbox" class="form-check-input" @bind="@_validateTokens" value="Validate token"></input></div>
     </div>
 
     <div>
-        <textarea rows="20" cols="60" @bind="@_token"></textarea>
-        <div>Token valid:</div> @_tokenIsValid
-
+        <pre><textarea rows="20" cols="60" @bind="@_token"></textarea></pre>
+        
+        @if (_tokenIsValid.HasValue && _tokenIsValid.Value) {
+            <span class="label label-success">Token is valid</span>
+        }
+        else if (_tokenIsValid.HasValue) {
+            <span class="label label-danger">Token is not valid</span>
+            <pre>@_tokenValidationMessage</pre>
+        }
+        
         <div>
-            Validation message:
-        </div>@_tokenValidationMessage
-
-        <div>
-            <input type="button" @onclick="async () => { ResetTokenText(); }" value="Clear" />
+            <input type="button" class="btn btn-primary" @onclick="async () => { ResetTokenText(); }" value="Clear" />
         </div>
    </div>
 
@@ -39,7 +42,7 @@
 
 
 @code {
-    private bool _tokenIsValid = false;
+    private bool? _tokenIsValid = null;
     private string? _tokenValidationMessage;
     private bool _decodeTokens = false;
     private bool _validateTokens = false;
@@ -102,31 +105,39 @@
 
         if (_decodeTokens)
         {
-            JwtSecurityToken parsed = new JwtSecurityToken(token);
-            token = parsed.ToString();
-
-            int index = token.IndexOf("}.{");
-            if (index > 0)
+            try
             {
-                string kid = token.Substring(0, index + 1);
-                string body = token.Substring(index + 2);
+                JwtSecurityToken parsed = new JwtSecurityToken(token);
+                token = parsed.ToString();
 
-                return $"{FormatJson(kid)}\n.\n{FormatJson(body)}";
+                int index = token.IndexOf("}.{");
+                if (index > 0)
+                {
+                    string kid = token.Substring(0, index + 1);
+                    string body = token.Substring(index + 2);
+
+                    return $"{FormatJson(kid)}\n.\n{FormatJson(body)}";
+                }
+                else
+                {
+                    return $"{FormatJson(token)}\n.";
+                }
             }
-            else
+            catch (Exception ex)
             {
-                return $"{FormatJson(token)}\n.";
+                _tokenIsValid = false;
+                _tokenValidationMessage = ex.Message;
             }
         }
-        else
-        {
-            return token;
-        }
+        
+        return token;
     }
 
     private void ResetTokenText()
     {
         _token = "Token will appear here";
+        _tokenValidationMessage = "";
+        _tokenIsValid = null;
     }
 
     private static string FormatJson(string input)
