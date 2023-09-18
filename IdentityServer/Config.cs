@@ -101,6 +101,7 @@ public static class Config
                 AlwaysIncludeUserClaimsInIdToken = true,
                 // scopes that client has access to
                 AllowOfflineAccess = true,
+                RefreshTokenUsage = TokenUsage.OneTimeOnly,
                 RequireConsent = true,
                 AllowedScopes = 
                 {
