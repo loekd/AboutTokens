@@ -10,5 +10,5 @@ This is a Single Page Web App that uses Cookies for authentication and authoriza
 
 @{
     string GetTitle() =>
-        NavigationManager.Uri.EndsWith("7166") ? "Regular WASM Frontend" : "Proxied WASM Frontend";
+        NavigationManager.Uri.Contains("7166") ? "Regular WASM Frontend" : "Proxied WASM Frontend";
 }
