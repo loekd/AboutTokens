@@ -1,7 +1,39 @@
+/*html, body {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    background-color: #1b6ec2;*/ /*blue*/
+    /*color: #fff;*/ /*white*/
+/*}
+
+h1:focus {
+    outline: none;
+}
+
+a, .btn-link {
+    color: #0071c1;
+}*/
+
 html, body {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-    background-color: #1b6ec2; /*blue*/
-    color: #fff; /*white*/
+    background-color: #1b6ec2 !important; /*blue*/
+}
+
+.top-row, tr, td, p {
+    background-color: #1b6ec2 !important;
+    color: white !important;
+}
+
+.h1, h1 {
+    outline: none;
+    color: white;
+}
+
+a, .btn-link {
+    color: white !important;
+}
+
+.sidebar {
+    background-image: none !important;
+    background-color: darkblue;
 }
 
 h1:focus {
