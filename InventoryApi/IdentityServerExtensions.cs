@@ -18,7 +18,9 @@
             builder.Services.AddAuthentication("Bearer")
                         .AddJwtBearer(options =>
                         {
-                            Microsoft.IdentityModel.Logging.IdentityModelEventSource.ShowPII = true;
+#if DEBUG
+                            Microsoft.IdentityModel.Logging.IdentityModelEventSource.ShowPII = true; //don't enable this on prod
+#endif
                             options.RequireHttpsMetadata = false;
                             options.Authority = idsrvConfig.Authority;
                             options.TokenValidationParameters.ValidateAudience = true;
@@ -31,22 +33,23 @@
                             {
                                 options.TokenValidationParameters.ValidIssuer = idsrvConfig.Authority;
                             }
-                            //options.ConfigurationManager = new CustomConfigurationManager(idsrvConfig.Authority);
 
-                            options.Events = new Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerEvents();
-                            options.Events.OnAuthenticationFailed = ctx =>
+                            options.Events = new Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerEvents
                             {
-                                return Task.CompletedTask;
-                            };
+                                OnAuthenticationFailed = ctx =>
+                                {
+                                    return Task.CompletedTask;
+                                },
 
-                            options.Events.OnTokenValidated = ctx =>
-                            {
-                                return Task.CompletedTask;
-                            };
+                                OnTokenValidated = ctx =>
+                                {
+                                    return Task.CompletedTask;
+                                },
 
-                            options.Events.OnForbidden = ctx =>
-                            {
-                                return Task.CompletedTask;
+                                OnForbidden = ctx =>
+                                {
+                                    return Task.CompletedTask;
+                                }
                             };
                         });
 
@@ -63,62 +66,3 @@
         }
     }
 }
-
-//public class CustomConfigurationManager : IConfigurationManager<OpenIdConnectConfiguration>
-//{
-//    private readonly string authority;
-
-//    public CustomConfigurationManager(string authority)
-//    {
-//        this.authority = authority;
-//    }
-//    public async Task<OpenIdConnectConfiguration> GetConfigurationAsync(CancellationToken cancel)
-//    {
-//        var handler = new HttpClientHandler() { ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator };
-//        var httpClient = new HttpClient(handler);
-
-//        var request = new HttpRequestMessage
-//        {
-//            RequestUri = new Uri($"{authority}/.well-known/openid-configuration"),
-//            Method = HttpMethod.Get
-//        };
-
-//        var configurationResult = await httpClient.SendAsync(request, cancel);
-//        var resultContent = await configurationResult.Content.ReadAsStringAsync(cancel);
-//        if (configurationResult.IsSuccessStatusCode)
-//        {
-//            var config = OpenIdConnectConfiguration.Create(resultContent);
-//            var jwks = config.JwksUri;
-//            var keyRequest = new HttpRequestMessage
-//            {
-//                RequestUri = new Uri(jwks),
-//                Method = HttpMethod.Get
-//            };
-//            var keysResponse = await httpClient.SendAsync(keyRequest, cancel);
-//            var keysResultContent = await keysResponse.Content.ReadAsStringAsync(cancel);
-//            if (keysResponse.IsSuccessStatusCode)
-//            {
-//                config.JsonWebKeySet = new Microsoft.IdentityModel.Tokens.JsonWebKeySet(keysResultContent);
-//                var signingKeys = config.JsonWebKeySet.GetSigningKeys();
-//                foreach (var key in signingKeys)
-//                {
-//                    config.SigningKeys.Add(key);
-//                }
-//            }
-//            else
-//            {
-//                throw new Exception($"Failed to get jwks: {keysResponse.StatusCode}: {keysResultContent}");
-//            }
-
-//            return config;
-//        }
-//        else
-//        {
-//            throw new Exception($"Failed to get configuration: {configurationResult.StatusCode}: {resultContent}");
-//        }
-//    }
-
-//    public void RequestRefresh()
-//    {
-//    }
-//}
