@@ -12,6 +12,9 @@ public abstract class ControllerTest
     private readonly WebApplicationFactory<Program> _factory;
     private readonly HttpClient _client;
 
+    /// <summary>
+    /// Client preconfigured to call Inventory API
+    /// </summary>
     protected HttpClient Client { get { return _client; } }
 
     protected ControllerTest()
@@ -25,10 +28,11 @@ public abstract class ControllerTest
                 builder.ConfigureTestServices(services =>
                 {
                     services
-                        .AddAuthentication(FakeJwtBearerDefaults.AuthenticationScheme)
+                        .AddAuthentication(FakeJwtBearerDefaults.AuthenticationScheme)  //Allow FakeBearer + token in Authorization header
                         .AddFakeJwtBearer(options =>
                         {
                             options.BearerValueType = FakeJwtBearerBearerValueType.Jwt;
+                            //useful for debugging, put breakpoints on callbacks if needed
                             options.Events = new WebMotions.Fake.Authentication.JwtBearer.Events.JwtBearerEvents
                             {
                                 OnAuthenticationFailed = ctx => Task.CompletedTask,
