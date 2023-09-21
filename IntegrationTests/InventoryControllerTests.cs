@@ -1,17 +1,33 @@
-using InventoryApi;
+using InventoryApi.Models;
 using System.Net.Http.Json;
-using static IntegrationTests.FakeTokenHelper;
 
 namespace IntegrationTests;
 
 [TestClass]
-public class WeatherForecastControllerTests : ControllerTest
+public class InventoryControllerTests : ControllerTest
 {
+    private const string InventoryReadWriteScope = "Inventory.ReadWrite";
+    private const string InventoryAllScope = "Inventory.All";
+    private const string InventoryClient = "InventoryApi";
+    private const string InventoryEndpoint = "api/inventory";
+
     [TestMethod]
-    public async Task ShouldReturnStatusCodeOK_WhenAuthenticatedWithProperScopes()
+    public async Task ShouldReturnStatusCodeOK_WhenAuthenticatedWithProperScope1()
     {
         //arrange
         Client.AddJwtClaims("Alice", InventoryClient, InventoryReadWriteScope);
+
+        //act
+        var response = await Client.GetAsync(InventoryEndpoint);
+
+        //assert
+        Assert.AreEqual(System.Net.HttpStatusCode.OK, response.StatusCode);
+    }
+    [TestMethod]
+    public async Task ShouldReturnStatusCodeOK_WhenAuthenticatedWithProperScope2()
+    {
+        //arrange
+        Client.AddJwtClaims("Alice", InventoryClient, InventoryAllScope);
 
         //act
         var response = await Client.GetAsync(InventoryEndpoint);
@@ -27,10 +43,10 @@ public class WeatherForecastControllerTests : ControllerTest
         Client.AddJwtClaims("Alice", InventoryClient, InventoryReadWriteScope);
 
         //act
-        var result = await Client.GetFromJsonAsync<IEnumerable<WeatherForecast>>($"{InventoryEndpoint}/");
+        var result = await Client.GetFromJsonAsync<IEnumerable<Inventory>>($"{InventoryEndpoint}/");
 
         //assert
-        Assert.IsInstanceOfType<IEnumerable<WeatherForecast>>(result);
+        Assert.IsInstanceOfType<IEnumerable<Inventory>>(result);
     }
 
     [TestMethod]

@@ -37,13 +37,6 @@ public class Program
                         {
                             RouteId = "InventoryApi",
                             ClusterId = "InventoryApiCluster",
-                            Transforms = new[]
-                            {
-                                new Dictionary<string, string>
-                                {
-                                    { "PathRemovePrefix", "/api" }
-                                }
-                            },
 
                             Match = new RouteMatch
                             {

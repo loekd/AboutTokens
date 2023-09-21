@@ -1,4 +1,6 @@
-﻿namespace InventoryApi
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+
+namespace InventoryApi
 {
 
     public static class IdentityServerExtensions
@@ -15,26 +17,30 @@
             Console.WriteLine($"Environment IdentityServer__Authority: {Environment.GetEnvironmentVariable("IdentityServer__Authority")}");
 
             //Use JWT bearer tokens for authentication
-            builder.Services.AddAuthentication("Bearer")
+            builder.Services.AddAuthentication()
                         .AddJwtBearer(options =>
                         {
 #if DEBUG
                             Microsoft.IdentityModel.Logging.IdentityModelEventSource.ShowPII = true; //don't enable this on prod
-#endif
                             options.RequireHttpsMetadata = false;
-                            options.Authority = idsrvConfig.Authority;
+#endif
+                            options.Authority = idsrvConfig.Authority; //identity server
+
                             options.TokenValidationParameters.ValidateAudience = true;
-                            options.TokenValidationParameters.ValidAudience = idsrvConfig.Audience;
+                            options.TokenValidationParameters.ValidAudience = idsrvConfig.Audience; //this api
+
+                            options.TokenValidationParameters.ValidateIssuer = true;
                             if (!string.IsNullOrWhiteSpace(idsrvConfig.Issuers))
                             {
-                                options.TokenValidationParameters.ValidIssuers = idsrvConfig.Issuers.Split(';');
+                                options.TokenValidationParameters.ValidIssuers = idsrvConfig.Issuers.Split(';'); //identity servers
                             }
                             else
                             {
-                                options.TokenValidationParameters.ValidIssuer = idsrvConfig.Authority;
+                                options.TokenValidationParameters.ValidIssuer = idsrvConfig.Authority; //identity server
                             }
 
-                            options.Events = new Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerEvents
+                            //for debugging, put breakpoints on callbacks if needed
+                            options.Events = new JwtBearerEvents
                             {
                                 OnAuthenticationFailed = ctx =>
                                 {
@@ -54,15 +60,12 @@
                         });
 
 
-            //Require authenticated users
-            //Require read-write scope
-            builder.Services.AddAuthorization(options =>
-                options.AddPolicy(ApiPolicyName, policy =>
+            builder.Services.AddAuthorizationBuilder()
+                .AddPolicy(ApiPolicyName, policy =>
                 {
-                    policy.RequireAuthenticatedUser();
-                    policy.RequireClaim("scope", idsrvConfig.RequiredReadWriteScopes.Split(';'));
-                })
-            );
+                    policy.RequireAuthenticatedUser(); //authenticated users only
+                    policy.RequireClaim("scope", idsrvConfig.RequiredReadWriteScopes.Split(';')); //"Inventory.All" or "Inventory.ReadWrite" scope needed
+                });
         }
     }
 }
