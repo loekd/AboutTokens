@@ -17,47 +17,47 @@ namespace InventoryApi
             Console.WriteLine($"Environment IdentityServer__Authority: {Environment.GetEnvironmentVariable("IdentityServer__Authority")}");
 
             //Use JWT bearer tokens for authentication
-            builder.Services.AddAuthentication()
-                        .AddJwtBearer(options =>
-                        {
+            builder.Services
+                .AddAuthentication()
+                .AddJwtBearer(options =>
+                {
 #if DEBUG
-                            Microsoft.IdentityModel.Logging.IdentityModelEventSource.ShowPII = true; //don't enable this on prod
-                            options.RequireHttpsMetadata = false;
+                    Microsoft.IdentityModel.Logging.IdentityModelEventSource.ShowPII = true; //don't enable this on prod
+                    options.RequireHttpsMetadata = false;
+                    //for debugging, put breakpoints on callbacks if needed
+                    options.Events = new JwtBearerEvents
+                    {
+                        OnAuthenticationFailed = ctx =>
+                        {
+                            return Task.CompletedTask;
+                        },
+
+                        OnTokenValidated = ctx =>
+                        {
+                            return Task.CompletedTask;
+                        },
+
+                        OnForbidden = ctx =>
+                        {
+                            return Task.CompletedTask;
+                        }
+                    };
 #endif
-                            options.Authority = idsrvConfig.Authority; //identity server
+                    options.Authority = idsrvConfig.Authority; //identity server
 
-                            options.TokenValidationParameters.ValidateAudience = true;
-                            options.TokenValidationParameters.ValidAudience = idsrvConfig.Audience; //this api
+                    options.TokenValidationParameters.ValidateAudience = true;
+                    options.TokenValidationParameters.ValidAudience = idsrvConfig.Audience; //this api
 
-                            options.TokenValidationParameters.ValidateIssuer = true;
-                            if (!string.IsNullOrWhiteSpace(idsrvConfig.Issuers))
-                            {
-                                options.TokenValidationParameters.ValidIssuers = idsrvConfig.Issuers.Split(';'); //identity servers
-                            }
-                            else
-                            {
-                                options.TokenValidationParameters.ValidIssuer = idsrvConfig.Authority; //identity server
-                            }
-
-                            //for debugging, put breakpoints on callbacks if needed
-                            options.Events = new JwtBearerEvents
-                            {
-                                OnAuthenticationFailed = ctx =>
-                                {
-                                    return Task.CompletedTask;
-                                },
-
-                                OnTokenValidated = ctx =>
-                                {
-                                    return Task.CompletedTask;
-                                },
-
-                                OnForbidden = ctx =>
-                                {
-                                    return Task.CompletedTask;
-                                }
-                            };
-                        });
+                    options.TokenValidationParameters.ValidateIssuer = true;
+                    if (!string.IsNullOrWhiteSpace(idsrvConfig.Issuers))
+                    {
+                        options.TokenValidationParameters.ValidIssuers = idsrvConfig.Issuers.Split(';'); //identity servers
+                    }
+                    else
+                    {
+                        options.TokenValidationParameters.ValidIssuer = idsrvConfig.Authority; //identity server
+                    }
+                });
 
 
             builder.Services.AddAuthorizationBuilder()

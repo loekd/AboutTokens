@@ -12,6 +12,19 @@ public class InventoryControllerTests : ControllerTest
     private const string InventoryEndpoint = "api/inventory";
 
     [TestMethod]
+    public async Task ShouldReturnStatusCodeOK_WhenAuthenticatedWithProperScopes()
+    {
+        //arrange
+        Client.AddJwtClaims("Alice", InventoryClient, InventoryReadWriteScope, "Finance.Admin", "Shipping.ReadWrite", "People.Admin", "Sales.All", "Invoice.Admin", "Orders.ReadWrite", "Payroll.Everything");
+
+        //act
+        var response = await Client.GetAsync(InventoryEndpoint);
+
+        //assert
+        Assert.AreEqual(System.Net.HttpStatusCode.OK, response.StatusCode);
+    }
+
+    [TestMethod]
     public async Task ShouldReturnStatusCodeOK_WhenAuthenticatedWithProperScope1()
     {
         //arrange
