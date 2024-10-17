@@ -1,5 +1,6 @@
 ﻿@page "/fetchdata"
 @inject HttpClient Http
+@inject ILogger<FetchData> Logger
 
 <PageTitle>Inventory</PageTitle>
 
@@ -35,13 +36,30 @@ else
         </tbody>
     </table>
 }
+@if (lastErrorMessage is not null)
+{
+    <pre><textarea rows="20" cols="60" @bind="@lastErrorMessage"></textarea></pre>
+}
 
 @code {
     private Inventory[]? inventoryItems;
+    private string? lastErrorMessage;
 
     protected override async Task OnInitializedAsync()
     {
-        inventoryItems = await Http.GetFromJsonAsync<Inventory[]>("api/inventory");
+        try
+        {
+            lastErrorMessage = null;
+            inventoryItems = null;
+            inventoryItems = await Http.GetFromJsonAsync<Inventory[]>("api/inventory");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to fetch inventory");
+            lastErrorMessage = $"Error: {ex.Message}";
+            inventoryItems = Array.Empty<Inventory>();
+        }
+
     }
 
     public class Inventory

@@ -9,6 +9,20 @@ namespace InventoryApi.Controllers;
 [Authorize(Policy = "ApiPolicy")]
 public class InventoryController(ILogger<InventoryController> logger) : ControllerBase
 {
+    [HttpGet]
+    public IEnumerable<Inventory> Get()
+    {
+        var inventory = Enumerable.Range(1, 8).Select(index => new Inventory
+        {
+            Date = DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
+            Description = Summaries[Random.Shared.Next(Summaries.Length)],
+            AmountInStock = Random.Shared.Next(0, 10000)
+        }).ToArray();
+
+        _logger.LogTrace("Returning {InventoryCount} inventory items", inventory.Length);
+        return inventory;
+    }
+
     private static readonly string[] Summaries =
     [
         "Door",
@@ -32,18 +46,4 @@ public class InventoryController(ILogger<InventoryController> logger) : Controll
     ];
 
     private readonly ILogger<InventoryController> _logger = logger;
-
-    [HttpGet]
-    public IEnumerable<Inventory> Get()
-    {
-        var inventory = Enumerable.Range(1, 8).Select(index => new Inventory
-        {
-            Date = DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Description = Summaries[Random.Shared.Next(Summaries.Length)],
-            AmountInStock = Random.Shared.Next(0, 10000)
-        }).ToArray();
-        
-        _logger.LogTrace("Returning {InventoryCount} inventory items", inventory.Length);
-        return inventory;
-    }
 }

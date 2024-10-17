@@ -63,8 +63,12 @@ namespace InventoryApi
             builder.Services.AddAuthorizationBuilder()
                 .AddPolicy(ApiPolicyName, policy =>
                 {
-                    policy.RequireAuthenticatedUser(); //authenticated users only
-                    policy.RequireClaim("scope", idsrvConfig.RequiredReadWriteScopes.Split(';')); //"Inventory.All" or "Inventory.ReadWrite" scope needed
+                    //authenticated users only
+                    policy.RequireAuthenticatedUser(); 
+
+                    string[] allowedScopeValues = idsrvConfig.RequiredReadWriteScopes.Split(';');
+                    //"Inventory.All" or "Inventory.ReadWrite" scope needed
+                    policy.RequireClaim("scope", allowedScopeValues); 
                 });
         }
     }
