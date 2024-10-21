@@ -53,6 +53,17 @@ public class Program
                             {
                                 Path = "/{**catch-all}"
                             }
+                        },
+                        new RouteConfig()
+                        {
+                            AuthorizationPolicy = "Anonymous",
+                            RouteId = "Idp",
+                            ClusterId = "IdentityServerCluster",
+
+                            Match = new RouteMatch
+                            {
+                                Path = "/idp/{**catch-all}"
+                            }
                         }
                     },
                     new[]
@@ -71,6 +82,14 @@ public class Program
                             Destinations = new Dictionary<string, DestinationConfig>(StringComparer.OrdinalIgnoreCase)
                             {
                                 { "Inventory", new DestinationConfig() { Address = "https://localhost:7290" } }, //api
+                            }
+                        },
+                        new ClusterConfig
+                        {
+                            ClusterId = "IdentityServerCluster",
+                            Destinations = new Dictionary<string, DestinationConfig>(StringComparer.OrdinalIgnoreCase)
+                            {
+                                { "Idp", new DestinationConfig() { Address = "https://localhost:7242" } }, //idp
                             }
                         }
                     });
