@@ -31,8 +31,7 @@ public class Program
             builder.Services.AddReverseProxy()
                 .AddTransforms<AccessTokenTransformProvider>()
                 .LoadFromMemory(
-                    new[]
-                    {
+                    [
                         new RouteConfig()
                         {
                             RouteId = "InventoryApi",
@@ -53,21 +52,9 @@ public class Program
                             {
                                 Path = "/{**catch-all}"
                             }
-                        },
-                        new RouteConfig()
-                        {
-                            AuthorizationPolicy = "Anonymous",
-                            RouteId = "Idp",
-                            ClusterId = "IdentityServerCluster",
-
-                            Match = new RouteMatch
-                            {
-                                Path = "/idp/{**catch-all}"
-                            }
                         }
-                    },
-                    new[]
-                    {
+                    ],
+                    [
                         new ClusterConfig
                         {
                             ClusterId = "BlazorCluster",
@@ -92,7 +79,7 @@ public class Program
                                 { "Idp", new DestinationConfig() { Address = "https://localhost:7242" } }, //idp
                             }
                         }
-                    });
+                    ]);
 
             builder.Services.AddAuthentication(options =>
             {

@@ -1,9 +1,11 @@
-﻿using Duende.IdentityServer.Test;
+﻿using Duende.IdentityServer.Services;
+using Duende.IdentityServer.Test;
 using IdentityServer.Data;
 using IdentityServer.Models;
 using IdentityServer.Options;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using System;
 
 namespace IdentityServer;
@@ -28,21 +30,6 @@ internal static class HostingExtensions
             .AddEntityFrameworkStores<ApplicationDbContext>()
             .AddDefaultTokenProviders();
 
-
-        ////allow X-Forward headers to specify the real host and protocol of Identity Server
-        //builder.Services.Configure<ForwardedHeadersOptions>(options =>
-        //{
-        //    options.ForwardedHeaders =
-        //        ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedHost;
-        //    options.KnownNetworks.Clear();
-        //    options.KnownProxies.Clear();
-        //    options.RequireHeaderSymmetry = false;
-        //    options.ForwardLimit = null;
-        //});
-
-
-
-
         builder.Services.AddIdentityServer(options =>
             {
                 options.Events.RaiseErrorEvents = true;
@@ -56,11 +43,12 @@ internal static class HostingExtensions
             .AddInMemoryIdentityResources(Config.IdentityResources)
             .AddAspNetIdentity<ApplicationUser>()
             .AddProfileService<CustomProfileService>()
-
-
             .AddInMemoryApiResources(Config.ApiResources)
             .AddInMemoryApiScopes(Config.ApiScopes)
             .AddInMemoryClients(Config.GetClients(idsrvConfig!));
+
+        builder.Services.RemoveAll<IConsentService>();
+        builder.Services.TryAddTransient<IConsentService, IdentityServer.Customizations.DefaultConsentService>();
 
         builder.Services.AddCors(options =>
         {
