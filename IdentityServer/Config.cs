@@ -9,6 +9,7 @@ public static class Config
 {
     public const string InventoryReadWriteScope = "Inventory.ReadWrite";
     public const string InventoryAllScope = "Inventory.All";
+    public const string CatalogAllScope = "Catalog.All";
 
     public static IEnumerable<IdentityResource> IdentityResources =>
         new List<IdentityResource>
@@ -28,6 +29,10 @@ public static class Config
             {
                 Description = "Full Access Inventory API."
             },
+            new ApiScope(CatalogAllScope)
+            {
+                Description = "Full Access Catalog API."
+            },
         };
 
     public static IEnumerable<ApiResource> ApiResources =>
@@ -38,6 +43,12 @@ public static class Config
                 Description = "Inventory API resource",
                 Scopes = { InventoryReadWriteScope, InventoryAllScope },
                 UserClaims = {  },
+            },
+            new ApiResource("CatalogApi", "Catalog Api Resource")
+            {
+                Description = "Catalog API resource",
+                Scopes = { CatalogAllScope },
+                UserClaims = {  },
             }
         };
 
@@ -45,15 +56,23 @@ public static class Config
     {
         return new List<Client>
         {
+            // Catalog API
+            new Client
+            {
+                ClientId = "catalog-api",
+                ClientSecrets = { new Secret(config.ClientSecret.Sha256()) },
+                AllowedGrantTypes = [GrantType.ClientCredentials],
+                AllowedScopes = {  }
+            },
             // Inventory API
             new Client
             {
                 ClientId = "inventory-api",
                 ClientSecrets = { new Secret(config.ClientSecret.Sha256()) },
 
-                AllowedGrantTypes = new[] {"urn:ietf:params:oauth:grant-type:token-exchange"},
+                AllowedGrantTypes = [GrantType.ClientCredentials, "urn:ietf:params:oauth:grant-type:token-exchange"],
                 // scopes that client has access to
-                AllowedScopes = { InventoryReadWriteScope }
+                AllowedScopes = { CatalogAllScope }
             },
             // Frontend With Tokens
             new Client
